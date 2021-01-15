@@ -1,22 +1,11 @@
 #!/usr/bin/env python
-from __future__ import division
 import sys
 import csv
 import pandas as pd
-import glob
-import matplotlib.pyplot as plt
-from numpy.random import normal, uniform
+#import glob
 import numpy as np
-import matplotlib as mpl
-from pylab import xticks
-from matplotlib.collections import EllipseCollection
-from matplotlib.gridspec import GridSpec
-from numpy.random import beta
-import matplotlib.mlab as mlab
-import matplotlib
-from scipy.stats import ks_2samp
 import random
-import timeit
+#import timeit
 
 ##Calculating numerical values of hypergeometric function, F(i-1, i+2, 2, x)
 ##The algorithm for calculating this function is based on Hoang-Binh 2005.
@@ -340,58 +329,6 @@ def calculate_simulated_cdf(sim_data, sample_size, run, no_binned):
 
     return het_level_sim
 
-#calculate the cumulative distribution (cdf) from a list of heteroplasmy level
-def hisgram_count(df, bins):
-    df1 = pd.cut(df, bins = bins, include_lowest=False)
-    df2 = df1.sort_values()
-    counts = pd.value_counts(df2, sort=False)
-    sum=len(df)
-    freq = counts/sum
-    #cumu = freq.cumsum()
-    return freq
-
-#def barchart(df_oberved_barchart, df_kimura_barchart, bins, pdf):
-#    df = pd.DataFrame({'P_kimura':df_kimura_barchart})
-#    df_observed = pd.DataFrame({'P_observed':df_oberved_barchart})
-#    fig, ax = plt.subplots()
-
-#    bar_width = 0.3
-#    N=11
-#    ind = np.arange(N)
-#    for i in range(0, len(df)):
-#        if i == 0:
-#            df.at[i, 'Freq_kimura'] = df.iloc[i]['P_kimura']
-#        else:
-#            df.at[i, 'Freq_kimura'] = df.iloc[i]['P_kimura'] - df.iloc[i-1]['P_kimura'] 
-#    ax1 = ax.bar(ind, df.Freq_kimura, bar_width, hatch="",color=['#de7a22'])
-#    ax2 = ax.bar(ind+bar_width, df_observed.P_observed, bar_width,hatch="", color=['#20948b'])
-#    ax.legend((ax1[0], ax2[0]), ('P_kimura', 'P_observed'))
-#    list = bins.tolist()
-#    xticklabels =  list[1:]
-#    ax.set_xlabel('Heteroplasmy level')
-#    ax.set_ylabel('Frequency')
-#    ax.set_title('Distribution of heteroplasmy level')
-#    ax.set_xticks(range(len(df)))
-#    ax.set_xticklabels((xticklabels))
-
-#    fig = ax.get_figure()
-#    fig.savefig(pdf)
-
-#def cumuplot(obs_data, kimura_dis, pdf):
-    
-#    kimura_dis_df = pd.DataFrame({'P_kimura':kimura_dis})
-#    kimura_dis_df['pos'] = kimura_dis_df.index/1000
-#    fig, ax = plt.subplots(figsize=(8, 6))
-#    n, bins, patches = ax.hist(obs_data['HF'], 1000, density=True, histtype='step',cumulative=True, label='Observed_distribution', color=['#20948b'])
-
-#    ax.plot(kimura_dis_df['pos'],kimura_dis_df['P_kimura'], label='Kimura_distribution',color='#de7a22')
-#    ax.set_xlabel('Heteroplasmy level')
-#    ax.set_ylabel('Cumulative probability distribution')
-#    ax.set_title('Distribution of heteroplasmy level')
-#    ax.legend(loc='best')
-#    fig = ax.get_figure()
-#    fig.savefig(pdf)
-
 def main():
     if len(sys.argv) < 2:
         print("You must set input raw data without header please!!!\n")
@@ -430,7 +367,7 @@ def main():
 #    b_ne = ((p*(1-p)) - var)/ (p*(1-p))
 
     #Calculate the maxinum number of iterations needed to be used in calculating Kimura distribution
-    terms = 100;
+    terms = 10;
     converge_id = finding_converge_id(terms, p, b_ne)
     
     #print and write to output1
@@ -440,7 +377,7 @@ def main():
 
     #Resolution of Kimura distribution and integrated Kimura distribution
     sub_integ = 200 #The number of subdivisions needed for integrating Kimura distribution 
-    max_data = 1000 #This number determines resolution of calculating Kimura distribution for generating simulated data 
+    max_data = 10 #This number determines resolution of calculating Kimura distribution for generating simulated data 
     no_binned = 10 #Number of binned data in a data set
     limit_size = max_data * 10 #This number determines resolution of calculating Kimura distribution for                                                            comparing to the observed data and calculating cdf of simulatied data 
 
@@ -469,17 +406,6 @@ def main():
     except IOError:
         comp_phi_cdf = calculate_continuous_cdf(output_binned3, converge_id, p, b_ne, sub_integ, limit_size)
  
- 
-    #3. cdf of discrete variables: for plotting barchart    
-    plot_phi_cdf = calculate_continuous_cdf(output_binned4, converge_id, p, b_ne, sub_integ, no_binned)
-           
-    #Plot barchart & cumulative distribution plot   
-    bins = np.arange(-0.1,1.01,0.1) 
-    freq_observed = hisgram_count(df['HF'], bins=bins)
-    #barchart(freq_observed.values,plot_phi_cdf,bins,output_barchart)
-    
-    #cumuplot(df, phi_cdf, output_cumuplot)   
-
     sample_cdf = list()
     read_input_data(input_raw, output_binned5, sample_size, limit_size);
     with open(output_binned5) as csvfile:
